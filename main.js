@@ -1,62 +1,79 @@
-window.addEventListener('load', () => {
-	const form = document.querySelector("#new-task-form");
-	const input = document.querySelector("#new-task-input");
-	const list_el = document.querySelector("#tasks");
+let submitBtn = document.getElementById("submit");
 
-	form.addEventListener('submit', (e) => {
-		e.preventDefault();
+const info = {
+    student_name: '',
+    email: '',
+    url: '',
+    website: '',
+    gender: '',
+    skillArr: [],
+}
 
-		const task = input.value;
+const getData = () => {
+    info.student_name = document.getElementById('name').value;
+    info.email = document.getElementById('email').value;
+    info.url = document.getElementById('url').value;
+    info.website = document.getElementById('website').value;
+    info.gender = document.querySelector('input[name="male-female"]:checked').value;
+    let skills = document.querySelectorAll('.checkbox:checked');
 
-		const task_el = document.createElement('div');
-		task_el.classList.add('task');
+    info.skillArr = [];
+    skills.forEach((item) => {
+        info.skillArr.push(item.value);
+    })
 
-		const task_content_el = document.createElement('div');
-		task_content_el.classList.add('content');
+    if (localStorage.getItem("infoSection") === null) {
+        infoItem = [];
+    }
+    else {
+        infoItem = JSON.parse(localStorage.getItem("infoSection"))
+    }
+    infoItem.push(info);
+    localStorage.setItem("infoSection", JSON.stringify(infoItem));
+}
 
-		task_el.appendChild(task_content_el);
+const showData = () => {
+    let cardContainer = document.getElementById("cardContainer");
 
-		const task_input_el = document.createElement('input');
-		task_input_el.classList.add('text');
-		task_input_el.type = 'text';
-		task_input_el.value = task;
-		task_input_el.setAttribute('readonly', 'readonly');
+    let cards = '';
 
-		task_content_el.appendChild(task_input_el);
+    let getLocalStorage = localStorage.getItem("infoSection");
 
-		const task_actions_el = document.createElement('div');
-		task_actions_el.classList.add('actions');
-		
-		const task_edit_el = document.createElement('button');
-		task_edit_el.classList.add('edit');
-		task_edit_el.innerText = 'Edit';
+    if (getLocalStorage === null) {
+        console.log("null");
+    }
+    else {
+        cardDivArr = JSON.parse(getLocalStorage);
 
-		const task_delete_el = document.createElement('button');
-		task_delete_el.classList.add('delete');
-		task_delete_el.innerText = 'Delete';
+        cardDivArr.forEach((item, index) => {
 
-		task_actions_el.appendChild(task_edit_el);
-		task_actions_el.appendChild(task_delete_el);
+            cards += `<div class="card">
+            <img src=${item.url} alt="Profile Picture">
+            <div class="info">
+                <p><strong>Name</strong> : ${item.student_name}</p>
+                <p><strong>Email</strong> : ${item.email}</p>
+                <p><strong>Website</strong> : <a href="${item.website}">Click here</a></p>
+                <p><strong>Gender</strong> : ${item.gender}</p>
+                <p><strong>Skills</strong> : ${item.skillArr.join(", ")}</p>
+                <button onclick="deleteData(${index})">Delete</button>
+            </div>
+        </div>`;
+        })
+    }
+    cardContainer.innerHTML = cards;
+}
 
-		task_el.appendChild(task_actions_el);
+const deleteData = (index) => {
+    let getList = JSON.parse(localStorage.getItem("infoSection"));
+    getList.splice(index, 1);
 
-		list_el.appendChild(task_el);
+    localStorage.setItem("infoSection", JSON.stringify(getList));
+    window.location.reload();
+}
 
-		input.value = '';
+// showData();
 
-		task_edit_el.addEventListener('click', (e) => {
-			if (task_edit_el.innerText.toLowerCase() == "edit") {
-				task_edit_el.innerText = "Save";
-				task_input_el.removeAttribute("readonly");
-				task_input_el.focus();
-			} else {
-				task_edit_el.innerText = "Edit";
-				task_input_el.setAttribute("readonly", "readonly");
-			}
-		});
-
-		task_delete_el.addEventListener('click', (e) => {
-			list_el.removeChild(task_el);
-		});
-	});
-});
+submitBtn.addEventListener(('click'), () => {
+    getData();
+    showData();
+})
